@@ -1,0 +1,80 @@
+#!/bin/bash
+
+usage() {
+  cat << EOS >&2
+ecssh
+  AWS Session Manager for Fargate Container
+USAGE:
+  ecssh [options]
+OPTIONS:
+  -p <profilename>         Aws Profile name
+  -h, --help               Show this help message.
+AUTHOR:
+  kory- (https://github.com/kory-)
+EOS
+}
+
+PROFILE_NAME=""
+
+while getopts "p:h-:" opt; do
+  case "${opt}" in
+    p)
+      PROFILE_NAME=${OPTARG}
+      ;;
+    h)
+      usage
+      exit 0
+      ;;
+    -)
+      case "${OPTARG}" in
+        help)
+          usage
+          exit 0
+          ;;
+        *)
+          if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
+            echo "Unknown option --${OPTARG}" >&2
+            usage
+            exit 1
+          fi
+          ;;
+      esac;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      usage
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+shift $((OPTIND -1))
+
+if [ -n "$PROFILE_NAME" ]; then
+  AWS_PROFILE_OPTION="--profile ${PROFILE_NAME}"
+else
+  AWS_PROFILE_OPTION=""
+fi
+
+CLUSTER_ARN=$(aws ecs list-clusters ${AWS_PROFILE_OPTION} \
+ | jq -r '.clusterArns[]' | peco)
+
+TASKS_ARNS="$(aws ecs list-tasks --cluster $CLUSTER_ARN ${AWS_PROFILE_OPTION} | jq -r '.taskArns[]')"
+
+TASK="$(aws ecs describe-tasks --cluster ${CLUSTER_ARN} --tasks ${TASKS_ARNS} ${AWS_PROFILE_OPTION} | jq -r '.tasks[] | (.taskDefinitionArn | split("/")[-1]) + " " + (.enableExecuteCommand | tostring) + " " + (.containers[] | (.taskArn | split("/")[-1]) + " " + .name)' | awk '{printf "%-40s %-40s %-20s %s\n", $1, $3, $4, $2}' | peco)"
+
+IFS=" " read -r task_definition_arn task_arn name exec <<< "$TASK"
+
+Command=" aws ecs execute-command \
+    --cluster ${CLUSTER_ARN} \
+    --task ${task_arn} \
+    --container ${name} \
+    --interactive \
+    --command '/bin/bash' \
+    ${AWS_PROFILE_OPTION}
+    "
+echo $Command
+eval $Command
