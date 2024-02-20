@@ -32,15 +32,13 @@ Install peco using the commands below. If you're on macOS, you can use Homebrew,
 
 **macOS:**
 
-```
-shCopy code
+```sh
 brew install peco
 ```
 
 **Linux (Debian/Ubuntu):**
 
-```
-shCopy code
+```sh
 sudo apt-get install peco
 ```
 
@@ -50,8 +48,7 @@ sudo apt-get install peco
 
 First, clone or download this repository, then grant execution permissions to the `ecssh` script.
 
-```
-shCopy code
+```sh
 git clone https://github.com/<your-username>/<repository-name>.git
 cd <repository-name>
 chmod +x ecssh
@@ -61,8 +58,7 @@ chmod +x ecssh
 
 The basic usage is as follows:
 
-```
-shCopy code
+```sh
 ./ecssh -p <AWS Profile Name>
 ```
 
@@ -72,8 +68,7 @@ The `-p` flag allows you to specify an AWS profile name, which is optional. If n
 
 To view help information about the script's usage and options, execute:
 
-```
-shCopy code
+```sh
 ./ecssh --help
 ```
 
