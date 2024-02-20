@@ -49,8 +49,8 @@ sudo apt-get install peco
 First, clone or download this repository, then grant execution permissions to the `ecssh` script.
 
 ```sh
-git clone https://github.com/<your-username>/<repository-name>.git
-cd <repository-name>
+git clone https://github.com/kory-/ecssh.git
+cd ecssh
 chmod +x ecssh
 ```
 
